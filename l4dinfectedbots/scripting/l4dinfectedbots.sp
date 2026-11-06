@@ -4666,6 +4666,7 @@ void Event_PlayerSpawn_Inected(Event event, const char[] name, bool dontBroadcas
 			// 期間如果發生Tank轉移控制權或是接待bot, 則不設置血量
 
 			DataPack hPack = new DataPack();
+			hPack.WriteCell(userid);
 			hPack.WriteCell(client);
 			hPack.WriteCell(g_bSpawnFromGhost[client]);
 			hPack.WriteCell(g_bDeSpawn[client]);
@@ -4687,16 +4688,19 @@ void Event_PlayerSpawn_Inected(Event event, const char[] name, bool dontBroadcas
 void OnNextFrame_SetCustomHealth(DataPack hPack)
 {
 	hPack.Reset();
+	int userid = hPack.ReadCell();
 	int client = hPack.ReadCell();
 	bool bSpawnFromGhost = hPack.ReadCell();
 	bool bDeSpawn = hPack.ReadCell();
 	delete hPack;
 
-	// 期間如果發生Tank轉移控制權或是接待bot, 則不設置血量
-	if(g_iZombieHpSet[client] > 0) return;
+	if(client != GetClientOfUserId(userid)) return;
 
 	if(IsClientInGame(client) && GetClientTeam(client) == TEAM_INFECTED && IsPlayerAlive(client) && !IsClientInKickQueue(client))
 	{	
+		// 期間如果發生Tank轉移控制權或是接待bot, 則不設置血量
+		if(g_iZombieHpSet[client] > 0) return;
+
 		int new_health = 0;
 		if (IsPlayerTank(client))
 		{
